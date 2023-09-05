@@ -3,11 +3,13 @@
 namespace Correios\Services\Date;
 
 use Correios\Exceptions\ApiRequestException;
+use Correios\Includes\Traits\CepHandler;
 use Correios\Services\AbstractRequest;
 use Correios\Services\Authorization\Authentication;
 
 class Date extends AbstractRequest
 {
+    use CepHandler;
     private string $requestNumber;
     private string $lotId;
     private array $serviceCodes;

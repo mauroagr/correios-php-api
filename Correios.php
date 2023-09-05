@@ -2,22 +2,27 @@
 
 namespace Correios;
 
-use Correios\Services\{Address\Cep, Authorization\Authentication, Date\Date, Price\Price, Tracking\Tracking};
+use Correios\Services\{
+    Address\Cep,
+    Authorization\Authentication,
+    Date\Date,
+    Price\Price,
+    Tracking\Tracking
+};
 
 class Correios
 {
     private Authentication $authentication;
     private string $requestNumber;
-    private string $lotId;
-    private string $postcard;
+    private string $contract;
     private array $errors = [];
 
-    public function __construct(string $username, string $password, string $postcard, bool $isTestMode = false, string $token = '')
+    public function __construct(string $username, string $password, string $contract, bool $isTestMode = false, string $token = '')
     {
         $this->requestNumber = time();
-        $this->postcard      = $postcard;
+        $this->contract      = $contract;
 
-        $this->authenticate($username, $password, $postcard, $isTestMode, $token);
+        $this->authenticate($username, $password, $contract, $isTestMode, $token);
     }
 
     public function tracking(): Tracking
@@ -45,28 +50,19 @@ class Correios
         return $this->authentication;
     }
 
-    private function authenticate(string $username, string $password, string $postcard, bool $isTestMode, string $token): void
+    private function authenticate(string $username, string $password, string $contract, bool $isTestMode, string $token): void
     {
-        $this->authentication = new Authentication($username, $password, $postcard, $isTestMode);
+        $this->authentication = new Authentication($username, $password, $contract, $isTestMode);
         if ($token) {
             $this->authentication->setToken($token);
             return;
         }
+
         $this->authentication->generateToken();
     }
 
     public function getErrors(): array
     {
         return $this->errors;
-    }
-
-    public function setRequestNumber(string $requestNumber): void
-    {
-        $this->requestNumber = $requestNumber;
-    }
-
-    public function setLotId(string $lotId): void
-    {
-        $this->lotId = $lotId;
     }
 }
