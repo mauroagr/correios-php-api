@@ -4,6 +4,7 @@ Correios API library for PHP
 * **[Utilização Básica (Basic Usage)](#usage)**
 * **[Respostas API (API Response)](#response)**
 * **[Autenticação (Authentication)](#auth)**
+* **[Contribua - Contribute](#contribute)**
 * **[Árvore de Arquivos (File Tree)](#tree)**
 
 <br/>
@@ -57,7 +58,6 @@ $correios->price()->get(
     products:[
         [
           'weight'      => 300,
-          'type'        => "string",
           'length'      => 0,
           'height'      => 200,
           'width'       => 200,
@@ -67,8 +67,10 @@ $correios->price()->get(
     ],
     originCep:'71930000',
     destinyCep:'05336010',
-    postcard: '45655684865',
-    dr: 20
+    fields: [
+        'nuContrato' => '0000000000',
+        'nuDR' => 20
+    ]
 );
 ```
 
@@ -86,7 +88,9 @@ $correios->date()->get(
     serviceCodes:['04162'],
     originCep:'71930000',
     destinyCep:'05336010',
-    postDate: '2023-01-01T01:01:01.001Z'
+    fields: [
+        'dtEvento' => '2023-01-01T01:01:01.001Z',
+    ]
 );
 ```
 
@@ -141,13 +145,37 @@ $correios = new \Correios\Correios(
 
 <br/>
 
+<h2 id="contribute">Contribua - Contribute</h2>
+
+Por favor, se for contribuir, leia os arquivos de **[Manual de contribuição](CONTRIBUTING.md)** e **[Código de Conduta](CODE_OF_CONDUCT.md)**.
+
+### SonarLint
+Durante o desenvolvimento, pedimos que use o plugin SonarLint, para que ele verifique a qualidade do código que está sendo desenvolvido - During development, we request that you use the SonarLint plugin to check the quality of the code being developed:
+
+* [VSCode](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode)
+* [PHPStorm](https://plugins.jetbrains.com/plugin/7973-sonarlint)
+
+<br/>
+
+### Instalação - Installation
+
+Installing the composer dependencies
+```shell
+composer install
+```
+
+Running the unit tests
+```shell
+composer test
+```
+
 <h2 id="tree">File Tree</h2>
 
 ```
 .
+├── CODE_OF_CONDUCT.md
 ├── composer.json
-├── composer.lock
-├── correios.php
+├── CONTRIBUTING.md
 ├── LICENSE
 ├── phpunit.xml
 ├── phpunit.xml.bak
@@ -156,12 +184,19 @@ $correios = new \Correios\Correios(
 │   ├── Correios.php
 │   ├── Exceptions
 │   │   ├── ApiRequestException.php
-│   │   └── InvalidCorreiosServiceCode.php
+│   │   ├── InvalidCepException.php
+│   │   ├── InvalidCorreiosServiceCode.php
+│   │   ├── MissingProductParamException.php
+│   │   └── SameCepException.php
 │   ├── Helpers
+│   │   ├── Cep.php
 │   │   └── Settings.php
 │   ├── Includes
-│   │   ├── Address.php
-│   │   └── Product.php
+│   │   ├── Cep.php
+│   │   ├── Product.php
+│   │   ├── Settings.php
+│   │   └── Traits
+│   │       └── CepHandler.php
 │   └── Services
 │       ├── AbstractRequest.php
 │       ├── Address
@@ -175,14 +210,15 @@ $correios = new \Correios\Correios(
 │       └── Tracking
 │           └── Tracking.php
 └── tests
-    ├── Feature
     └── Unit
         ├── CorreiosTest.php
         ├── Helpers
+        │   ├── CepTest.php
         │   └── SettingsTest.php
         ├── Includes
-        │   ├── AddressTest.php
-        │   └── ProductTest.php
+        │   ├── CepTest.php
+        │   ├── ProductTest.php
+        │   └── SettingsTest.php
         └── Services
             ├── Address
             │   └── CepTest.php

@@ -4,12 +4,12 @@ namespace Correios\Services\Price;
 
 use Correios\Exceptions\ApiRequestException;
 use Correios\Exceptions\MissingProductParamException;
+use Correios\Includes\Traits\CepHandler;
 use Correios\Includes\Product;
 use Correios\Services\{
     AbstractRequest,
     Authorization\Authentication
 };
-use Correios\Includes\Traits\CepHandler;
 
 class Price extends AbstractRequest
 {
@@ -22,10 +22,10 @@ class Price extends AbstractRequest
     private array $body;
     private $token;
 
-    public function __construct(Authentication $authentication, string $requestNumber)
+    public function __construct(Authentication $authentication, string $requestNumber, string $lotId = '')
     {
         $this->requestNumber = $requestNumber;
-        $this->lotId = $requestNumber . 'LT';
+        $this->lotId = $lotId ?? $requestNumber . 'LT';
         $this->authentication = $authentication;
 
         $this->setMethod('POST');
@@ -34,7 +34,7 @@ class Price extends AbstractRequest
         $this->buildHeaders();
     }
 
-    private function buildBody(array $serviceCodes, array $products, string $contract = '', int $dr = 0): void
+    private function buildBody(array $serviceCodes, array $products, array $fields): void
     {
         $productParams = [];
 
@@ -62,11 +62,11 @@ class Price extends AbstractRequest
                 $productParams[] = $this->setOptionalParams($product, $productParam);
             }
         }
+
         $this->setBody([
             'idLote' => $this->lotId,
             'parametrosProduto' => $productParams,
         ]);
-
     }
 
     private function setOptionalParams(Product $product, array $productParam): array
@@ -133,16 +133,16 @@ class Price extends AbstractRequest
 
         return $product;
     }
-    public function get(array $serviceCodes, array $products, string $originCep, string $destinyCep, string $contract = '', int $dr = 0): array
+    public function get(array $serviceCodes, array $products, string $originCep, string $destinyCep, array $fields = []): array
     {
         try {
+            $this->originCep  = $this->validateCep($originCep);
+            $this->destinyCep = $this->validateCep($destinyCep);
+
             $this->buildBody(
                 $serviceCodes,
                 $this->buildProductList($products),
-                $this->validateCep($originCep),
-                $this->validateCep($destinyCep),
-                $contract,
-                $dr
+                $fields
             );
 
             $this->sendRequest();

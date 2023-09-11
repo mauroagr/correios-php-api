@@ -46,7 +46,7 @@ class Date extends AbstractRequest
 
     }
 
-    public function get(array $serviceCodes, $originCep, $destinyCep): array
+    public function get(array $serviceCodes, string $originCep, string $destinyCep, array $fields = []): array
     {
         try {
             $this->buildBody($serviceCodes, $originCep, $destinyCep);
@@ -61,6 +61,7 @@ class Date extends AbstractRequest
             return [];
         }
     }
+
 
     private function buildHeaders(): void
     {
