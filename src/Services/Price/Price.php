@@ -16,6 +16,11 @@ class Price extends AbstractRequest
     use CepHandler;
     private string $requestNumber;
     private string $lotId;
+    private array $serviceCodes;
+    private array $products;
+    private array $parametrosProduto;
+    private array $body;
+    private $token;
 
     public function __construct(Authentication $authentication, string $requestNumber, string $lotId = '')
     {
@@ -26,6 +31,7 @@ class Price extends AbstractRequest
         $this->setMethod('POST');
         $this->setEndpoint('preco/v1/nacional');
         $this->setEnvironment($this->authentication->getEnvironment());
+        $this->buildHeaders();
     }
 
     private function buildBody(array $serviceCodes, array $products, array $fields): void
@@ -42,7 +48,18 @@ class Price extends AbstractRequest
                     "nuRequisicao" => $this->requestNumber
                 ];
 
-                $productParams[] = array_merge($fields, $this->setOptionalParams($product, $productParam));
+                if ($contract && $dr) {
+                    $productParam['nuContrato'] = $contract;
+                    $productParam['nuDR'] = $dr;
+                }
+
+                if ($product["vlDeclarado"] > 0) {
+                    $parametrosService = ["servicosAdicionais"  => [$product["vlDeclaradoCodigo"]],
+                                          "vlDeclarado"         => $product["vlDeclarado"]];
+                    array_push($productParam, $parametrosService);
+                }
+
+                $productParams[] = $this->setOptionalParams($product, $productParam);
             }
         }
 
@@ -139,4 +156,12 @@ class Price extends AbstractRequest
             return [];
         }
     }
+
+    private function buildHeaders(): void
+    {
+        $this->setHeaders([
+            'Authorization' => 'Basic ' . $this->token,
+        ]);
+    }
+
 }

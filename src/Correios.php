@@ -49,11 +49,7 @@ class Correios
 
     public function date(bool $reset = false): Date
     {
-        if(!isset($this->date) || $reset) {
-            $this->date = new Date($this->authentication, $this->requestNumber, $this->lotId);
-        }
-
-        return $this->date;
+        return new Date($this->authentication, $this->requestNumber);
     }
 
     public function address(bool $reset = false): Cep
@@ -77,7 +73,6 @@ class Correios
             $this->authentication->setToken($token);
             return;
         }
-
         $this->authentication->generateToken();
     }
 

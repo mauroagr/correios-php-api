@@ -4,57 +4,53 @@ namespace Correios\Services\Date;
 
 use Correios\Exceptions\ApiRequestException;
 use Correios\Includes\Traits\CepHandler;
-use Correios\Services\{
-    AbstractRequest,
-    Authorization\Authentication
-};
+use Correios\Services\AbstractRequest;
+use Correios\Services\Authorization\Authentication;
 
 class Date extends AbstractRequest
 {
     use CepHandler;
     private string $requestNumber;
     private string $lotId;
+    private array $serviceCodes;
+    private array $products;
+    private array $parametrosPrazo;
+    private array $body;
+    private $token;
 
-    public function __construct(Authentication $authentication, string $requestNumber, string $lotId = '')
+    public function __construct(Authentication $authentication, string $requestNumber)
     {
         $this->requestNumber = $requestNumber;
-        $this->lotId = $lotId ?: $requestNumber . 'LT';
+        $this->lotId = $requestNumber . 'LT';
         $this->authentication = $authentication;
 
         $this->setMethod('POST');
         $this->setEndpoint('prazo/v1/nacional');
         $this->setEnvironment($this->authentication->getEnvironment());
+        $this->buildHeaders();
     }
 
-    private function buildBody(array $serviceCodes, array $fields = []): void
+    private function buildBody($serviceCodes, $originCep, $destinyCep): void
     {
-        $productParams = [];
-
         foreach ($serviceCodes as $service) {
-            $productParam = [
-                "coProduto" => $service,
-                "cepOrigem" => $this->originCep,
-                "cepDestino" => $this->destinyCep,
-                "nuRequisicao" => $this->requestNumber
-            ];
-            $productParams[] = array_merge($fields, $productParam);
+            $parametrosPrazo[] = ["coProduto" => $service,
+                                    "cepOrigem" => $originCep,
+                                    "cepDestino" => $destinyCep,
+                                    "nuRequisicao" => $this->requestNumber];
         }
 
         $this->setBody([
             'idLote' => $this->lotId,
-            'parametrosPrazo' => $productParams
+            'parametrosPrazo' => $parametrosPrazo,
         ]);
+
     }
 
     public function get(array $serviceCodes, string $originCep, string $destinyCep, array $fields = []): array
     {
         try {
-            $this->originCep  = $this->validateCep($originCep);
-            $this->destinyCep = $this->validateCep($destinyCep);
-
-            $this->buildBody($serviceCodes, $fields);
+            $this->buildBody($serviceCodes, $originCep, $destinyCep);
             $this->sendRequest();
-
             return [
                 'code' => $this->getResponseCode(),
                 'data' => $this->getResponseBody(),
@@ -65,4 +61,13 @@ class Date extends AbstractRequest
             return [];
         }
     }
+
+
+    private function buildHeaders(): void
+    {
+        $this->setHeaders([
+            'Authorization' => 'Basic ' . $this->token,
+        ]);
+    }
+
 }
